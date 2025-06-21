@@ -78,7 +78,7 @@ Clone the repository and run the app locally:
 
 ```bash
 git clone https://github.com/Lesego-1/Customer-Dispute-Classification.git
-cd Complaints-NLP
+cd Customer-Dispute-Classification
 
 # Create virtual environment
 python -m venv venv
