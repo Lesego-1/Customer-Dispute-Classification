@@ -77,7 +77,7 @@ This project analyzes real-world complaints submitted to banks and financial ins
 Clone the repository and run the app locally:
 
 ```bash
-git clone https://github.com/Lesego-1/Complaints-NLP.git
+git clone https://github.com/Lesego-1/Customer-Dispute-Classification.git
 cd Complaints-NLP
 
 # Create virtual environment
