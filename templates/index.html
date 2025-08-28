@@ -21,6 +21,23 @@
                 border-radius: 0;
             }
         }
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #loading-spinner {
+            text-align: center;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -29,6 +46,11 @@
             <h1 class="text-4xl font-light text-gray-800 mb-3">Complaint Prediction</h1>
             <p class="text-gray-600 max-w-2xl mx-auto">Submit text to predict customer dispute and receive a summary.</p>
         </header>
+
+        <div id="loading-spinner" style="display:none;">
+        <div class="spinner"></div>
+        <p>Processing your text...</p>
+        </div>
 
         <!-- Input Form Section -->
         <main id="inputSection">
@@ -103,39 +125,90 @@
     </div>
 
     <script>
-        document.getElementById("textForm").addEventListener("submit", async function(e) {
+        const textForm = document.getElementById("textForm");
+        const spinner = document.getElementById("loading-spinner");
+        const inputSection = document.getElementById("inputSection");
+        const resultSection = document.getElementById("resultSection");
+        const sentimentIcon = document.getElementById("sentimentIcon");
+        const sentimentText = document.getElementById("sentimentText");
+        const confidenceText = document.getElementById("confidenceText");
+        const summaryText = document.getElementById("summaryText");
+        const originalText = document.getElementById("originalText");
+
+        textForm.addEventListener("submit", async function (e) {
             e.preventDefault();
+
             const text = document.getElementById("textInput").value;
 
+            // Show spinner
+            spinner.style.display = "block";
+
+            // Allow spinner to render
+            await new Promise((resolve) => setTimeout(resolve, 50));
+
+            try {
             const response = await fetch("/api/predict/", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ text })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text }),
             });
 
             const data = await response.json();
 
-            document.getElementById("inputSection").classList.add("hidden");
-            document.getElementById("resultSection").classList.remove("hidden");
+            // Hide spinner
+            spinner.style.display = "none";
 
-            const sentimentIcon = document.getElementById("sentimentIcon");
-            sentimentIcon.innerHTML = data.result == 1
-                ? '<svg class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
-                : '<svg class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 14.828a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+            // Show results section
+            inputSection.classList.add("hidden");
+            resultSection.classList.remove("hidden");
 
-            document.getElementById("sentimentText").textContent = `The likelihood that the customer will dispute is: ${data.result}`;
-            document.getElementById("confidenceText").textContent = `Confidence: ${data.confidence}`;
-            document.getElementById("summaryText").textContent = data.summary;
-            document.getElementById("originalText").textContent = data.original_text;
+            // Update sentiment icon
+            if (data.result == 0) {
+                // No dispute → green smiling face
+                sentimentIcon.innerHTML = `
+                <svg class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16s1.5-2 4-2 4 2 4 2"/>
+                    <circle cx="9" cy="10" r="1"/>
+                    <circle cx="15" cy="10" r="1"/>
+                </svg>`;
+                
+            } else {
+                // Dispute → red frowning face
+                sentimentIcon.innerHTML = `
+                <svg class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                    <circle cx="9" cy="10" r="1"/>
+                    <circle cx="15" cy="10" r="1"/>
+                </svg>`;
+            }
+
+
+            // Update result texts
+            sentimentText.textContent = `Likelihood of dispute: ${data.result}`;
+            confidenceText.textContent = `Confidence: ${data.confidence}%`;
+            summaryText.textContent = data.summary;
+            originalText.textContent = data.original_text;
+
+            } catch (error) {
+            spinner.style.display = "none";
+            alert("Error: " + error.message);
+            }
         });
 
+        // Reset form function
         function resetForm() {
-            document.getElementById("textForm").reset();
-            document.getElementById("resultSection").classList.add("hidden");
-            document.getElementById("inputSection").classList.remove("hidden");
+            textForm.reset();
+            resultSection.classList.add("hidden");
+            inputSection.classList.remove("hidden");
+            sentimentIcon.innerHTML = "";
+            sentimentText.textContent = "";
+            confidenceText.textContent = "";
+            summaryText.textContent = "";
+            originalText.textContent = "";
         }
     </script>
+
 </body>
 </html>

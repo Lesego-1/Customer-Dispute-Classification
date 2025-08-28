@@ -46,6 +46,7 @@ def predict_dispute(request):
         result = "No Dispute"
             
     confidence = np.max(confidence, axis=1)  # Get the highest confidence
+    confidence = confidence*100
     summary = summarization_model(text, max_length=50, min_length=20, do_sample=False)
     
     # Return JSON response
