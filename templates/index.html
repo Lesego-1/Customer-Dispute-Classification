@@ -121,33 +121,43 @@
     </div>
 
     <script>
-        const textForm = document.getElementById("textForm");
-        const spinner = document.getElementById("loading-spinner");
-        const inputSection = document.getElementById("inputSection");
-        const resultSection = document.getElementById("resultSection");
-        const sentimentIcon = document.getElementById("sentimentIcon");
-        const sentimentText = document.getElementById("sentimentText");
-        const confidenceText = document.getElementById("confidenceText");
-        const summaryText = document.getElementById("summaryText");
-        const originalText = document.getElementById("originalText");
+    const textForm = document.getElementById("textForm");
+    const spinner = document.getElementById("loading-spinner");
+    const inputSection = document.getElementById("inputSection");
+    const resultSection = document.getElementById("resultSection");
+    const sentimentIcon = document.getElementById("sentimentIcon");
+    const sentimentText = document.getElementById("sentimentText");
+    const confidenceText = document.getElementById("confidenceText");
+    const summaryText = document.getElementById("summaryText");
+    const originalText = document.getElementById("originalText");
 
-        textForm.addEventListener("submit", async function (e) {
-            e.preventDefault();
+    textForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-            const text = document.getElementById("textInput").value;
+        const text = document.getElementById("textInput").value;
 
-            // Show spinner
-            spinner.style.display = "block";
+        // Show spinner
+        spinner.style.display = "block";
 
-            // Allow spinner to render
-            await new Promise((resolve) => setTimeout(resolve, 50));
+        // Allow spinner to render
+        await new Promise((resolve) => setTimeout(resolve, 50));
 
-            try {
-            const response = await fetch("/api/predict/", {
+        try {
+            // Set the base URL for local Docker; use "" for production if frontend served from same domain
+            const BASE_URL = "http://localhost:8001";
+
+            // Make the API request
+            const response = await fetch(`${BASE_URL}/api/predict/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ text }),
             });
+
+            // Check if response is OK before parsing JSON
+            if (!response.ok) {
+                const textResponse = await response.text(); // for debugging
+                throw new Error(`Server returned ${response.status}: ${textResponse}`);
+            }
 
             const data = await response.json();
 
@@ -162,17 +172,16 @@
             if (data.result == 0) {
                 // No dispute → green smiling face
                 sentimentIcon.innerHTML = `
-                <svg class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <circle cx="12" cy="12" r="10" stroke-width="2"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16s1.5-2 4-2 4 2 4 2"/>
                     <circle cx="9" cy="10" r="1"/>
                     <circle cx="15" cy="10" r="1"/>
                 </svg>`;
-                
             } else {
                 // Dispute → red frowning face
                 sentimentIcon.innerHTML = `
-                <svg class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <circle cx="12" cy="12" r="10" stroke-width="2"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14s1.5 2 4 2 4-2 4-2"/>
                     <circle cx="9" cy="10" r="1"/>
@@ -180,31 +189,32 @@
                 </svg>`;
             }
 
-
             // Update result texts
             sentimentText.textContent = `Likelihood of dispute: ${data.result}`;
             confidenceText.textContent = `Confidence: ${data.confidence}%`;
             summaryText.textContent = data.summary;
             originalText.textContent = data.original_text;
 
-            } catch (error) {
+        } catch (error) {
             spinner.style.display = "none";
-            alert("Error: " + error.message);
-            }
-        });
-
-        // Reset form function
-        function resetForm() {
-            textForm.reset();
-            resultSection.classList.add("hidden");
-            inputSection.classList.remove("hidden");
-            sentimentIcon.innerHTML = "";
-            sentimentText.textContent = "";
-            confidenceText.textContent = "";
-            summaryText.textContent = "";
-            originalText.textContent = "";
+            console.error("Fetch error:", error);
+            alert("Error calling API. See console for details.");
         }
+    });
+
+    // Reset form function
+    function resetForm() {
+        textForm.reset();
+        resultSection.classList.add("hidden");
+        inputSection.classList.remove("hidden");
+        sentimentIcon.innerHTML = "";
+        sentimentText.textContent = "";
+        confidenceText.textContent = "";
+        summaryText.textContent = "";
+        originalText.textContent = "";
+    }
     </script>
+
 
 </body>
 </html>

@@ -7,6 +7,7 @@ from django.conf import settings
 import os
 import spacy
 import re
+from tensorflow.keras.models import load_model
 
 def vectorizer(text:str):
     text = text.lower()  # Lowercase the text
@@ -32,9 +33,9 @@ def predict_dispute(request):
     model_text = model_text.reshape(1, -1)
     
     # Load models
-    clf_model_path = os.path.join(BASE_DIR, "disputes", "models", "model.pkl")
+    clf_model_path = os.path.join(BASE_DIR, "disputes", "models", "model.h5")
     summarization_model_path = os.path.join(BASE_DIR, "disputes", "models", "summarization_model.pkl")
-    classification_model = joblib.load(clf_model_path)
+    classification_model = load_model(clf_model_path)
     summarization_model = joblib.load(summarization_model_path)
 
     # Generate results

@@ -2,3 +2,5 @@ disputes/models/summarization_model.pkl
 notebooks/consumer_complaints.csv
 venv/
 .env
+__pychache__
+en_core_web_lg-3.6.0-py3-none-any.whl
