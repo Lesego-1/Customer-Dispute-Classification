@@ -28,13 +28,22 @@ stack-data==0.6.3
 tornado==6.5.1
 traitlets==5.14.3
 wcwidth==0.2.13
+
+# ML / NLP stack
+numpy==1.26.4
+pandas==2.2.2
+scipy==1.13.1
+scikit-learn==1.6.1
+joblib==1.4.2
+imbalanced-learn==0.12.3
+
 spacy==3.8.7
-pandas==2.3.2
-numpy==2.3.2
-scikit-learn==1.7.1
-tensorflow==2.20.0
-joblib==1.5.1
-transformers==4.55.4
-imbalanced-learn==0.14.0
-Django==5.2.5
-djangorestframework==3.16.1
+transformers==4.44.2   # latest stable with Py3.12 & TF 2.19
+tensorflow==2.19.0
+tensorboard==2.19.0
+protobuf==4.25.5
+ml-dtypes==0.5.1
+
+# Django stack
+Django==5.1.3
+djangorestframework==3.15.2

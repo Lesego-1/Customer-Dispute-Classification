@@ -8,6 +8,7 @@ import os
 import spacy
 import re
 from tensorflow.keras.models import load_model
+from transformers import pipeline
 
 def vectorizer(text:str):
     text = text.lower()  # Lowercase the text
@@ -17,7 +18,10 @@ def vectorizer(text:str):
     # Vectorize the text
     nlp = spacy.load('en_core_web_lg')
     doc = nlp(text)
-    return doc.vector  # Return the vectorized text
+    return doc.vector  # Return the vectorized 
+
+def load_summarization_model():
+    return pipeline('summarization')
 
 # Create your views here.
 def index(request):
@@ -36,7 +40,7 @@ def predict_dispute(request):
     clf_model_path = os.path.join(BASE_DIR, "disputes", "models", "model.h5")
     summarization_model_path = os.path.join(BASE_DIR, "disputes", "models", "summarization_model.pkl")
     classification_model = load_model(clf_model_path)
-    summarization_model = joblib.load(summarization_model_path)
+    summarization_model = load_summarization_model()
 
     # Generate results
     confidence = classification_model.predict(model_text)
